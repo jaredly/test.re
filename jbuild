@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+;; This declare the hello_world executable implemented by hello_world.ml
+(executable
+ ((name ppx_test)
+  (libraries (compiler-libs.common))
+  (preprocess (pps (ppx_tools.metaquot)))))
