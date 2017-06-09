@@ -1,0 +1,8 @@
+
+(executable ((name test_actual)))
+
+(rule (
+  (targets (test.output))
+  (deps (test_actual.exe))
+  (action (with-outputs-to ${@} (run ${<})))
+))
