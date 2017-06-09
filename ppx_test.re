@@ -1,12 +1,3 @@
-/*open Asttypes;*/
-/*open Parsetree;*/
-/*open Longident;*/
-
-let getenv s =>
-  try (Sys.getenv s) {
-  | Not_found => ""
-};
-
 let make_final_test_block tests => {
   let loc = Location.none;
   open Parsetree;
@@ -25,19 +16,81 @@ let make_final_test_block tests => {
     !tests;
     print_endline ("Done! " ^ (string_of_int errs) ^ " failed out of " ^ (string_of_int total))
   }]
-  /*
-  open Parsetree;
-  open Ast_helper;
-  Str.eval (
-    Exp.apply
-    (Exp.ident (Location.mknoloc (Longident.Lident "parse_tree")))
-    [("", Exp.constant (Asttypes.Const_string "hello" None))]
-  )
-  */
 };
 
-let getenv_mapper argv =>
-  /* Our getenv_mapper only overrides the handling of expressions in the default mapper. */
+/**
+ * let fn a => a + 2
+ * [@@test [(in, out), (in, out)]]
+ * [@@test.compare fun a b => a == b] /* default */
+ * 
+ * one of these two is useful (until we have modular implicits)
+ * [@@test.diff fun a b => "got %{a} expected %{b}"]
+ * [@@test.show fun a => string_of_int a]
+ * orrr if we're in js-land, I can do `Js.log`, but how will I know?
+ * maybe I'll have a flag that's like "bucklescript"
+ * 
+ * [@@test.check {
+ *   "name of the check";
+ *   let x = myfn 10;
+ *   if (x > 3) {
+ *     Some "wasn't supposed to be greater than 3"
+ *   } else {
+ *     None
+ *   }
+ * }]
+ * [@@test.name "my special thing"]
+ * 
+ * [@@@test.run {
+ *   print_endline "do arbitrary things"
+ * }]
+ * 
+ * main() [@@test.hide];
+ */
+
+let process_attributes attributes => {
+
+};
+
+type test = {
+  fixtures: option Parsetree.expression,
+  diff: option Parsetree.expression,
+  show: option Parsetree.expression,
+  compare: option Parsetree.expression,
+  checks: list Parsetree.expression,
+  name: option string,
+};
+
+/*
+let process_bindings mapper bindings => {
+  List.fold_left
+  (fun tests binding => {
+    let (name, fixtures, ) = process_attributes binding.pvb_attributes;
+    switch (getInfo binding) {
+    | None => switch (name, body) {
+      | (None, None) => tests
+      | _ => raise "bad ness"
+    }
+    | Some (fname, args) => {
+        let name = switch (name) { |None => fname | Some name => name};
+      }
+    }
+    switch (test.body) {
+    | None => tests
+    | Some body => {
+      let name = switch (test.name) {
+      | Some name => name
+      | None => binding.
+      }
+    }
+    }
+  })
+  []
+  bindings
+}
+*/
+
+let getenv_mapper argv => {
+  /*print_endline "Argv";*/
   Parsetree.{
     ...Ast_mapper.default_mapper,
     structure: fun mapper items => {
@@ -45,54 +98,23 @@ let getenv_mapper argv =>
       let (backwards, tests) = List.fold_left (fun (results, tests) item => {
         switch (item.Parsetree.pstr_desc) {
         | Pstr_value _ bindings => {
-          ([
-            [%stri let _ = tests := [("hello", fun () => "Failed"), ...!tests]],
+          let test_strs = [];
+          /*process_bindings mapper bindings;*/
+          (test_strs @ [
+            [%stri let _ = tests := [("hello", fun () => Some "Failed"), ...!tests]],
             Ast_mapper.default_mapper.structure_item mapper item,
             ...results
-          ], [1, ...tests])
+          ], tests + 1)
         }
         | _ => ([Ast_mapper.default_mapper.structure_item mapper item, ...results], tests)
         }
-      }) ([], []) items;
+      }) ([], 0) items;
       switch (tests) {
-      | [] => List.rev backwards
+      | 0 => List.rev backwards
       | _ => [[%stri let tests = ref []], ...List.rev [make_final_test_block tests, ...backwards]]
       };
     },
-    /*
-    expr: fun mapper expr =>
-      switch expr {
-      /* Is this an extension node? */
-      | {
-          pexp_desc:
-            /* Should have name "getenv". */
-            Pexp_extension ({txt: "getenv", loc}, pstr)
-        } =>
-        switch pstr {
-        /* Should have a single structure item, which is evaluation of a constant string. */
-        | PStr [
-            {
-              pstr_desc:
-                Pstr_eval 
-                  {
-                    pexp_loc: loc,
-                    pexp_desc: Pexp_constant (Const_string sym None)
-                  }
-                  _
-            }
-          ] =>
-          /* Replace with a constant string with the value from the environment. */
-          Ast_helper.Exp.constant ::loc (Const_string (getenv sym) None)
-        | _ =>
-          raise (
-            Location.Error (
-              Location.error ::loc "[%getenv] accepts a string, e.g. [%getenv \"USER\"]"
-            )
-          )
-        } /* Delegate to the default mapper. */
-      | x => Ast_mapper.default_mapper.expr mapper x
-    }
-    */
   };
+};
 
-let () = Ast_mapper.register "getenv" getenv_mapper;
+let () = Ast_mapper.register "ppx_test" getenv_mapper;

@@ -2,6 +2,18 @@
 (executable ((name test_actual)))
 
 (rule (
+  (targets (test_.ml))
+  (deps (test.re))
+  (action (with-outputs-to ${@} (run refmt -p ml ${<})))
+))
+
+(rule (
+  (targets (test_actual.ml))
+  (deps (test_.ml))
+  (action (with-outputs-to test_actual.ml (system "ocamlc -dsource -ppx ${exe:../ppx_test.exe} -impl ${<}")))
+))
+
+(rule (
   (targets (test.output))
   (deps (test_actual.exe))
   (action (with-outputs-to ${@} (run ${<})))
