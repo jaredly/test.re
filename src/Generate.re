@@ -18,15 +18,26 @@ let process_check name i (cname, body) => {
   [%expr fun () => ([%e str_exp name], [([%e str_exp cname], [%e body])])]
 };
 
+let ident name => Ast_helper.Exp.ident (Location.mknoloc (Longident.Lident name));
+
 let make_fncall name count => {
   open Parsetree;
+  open Ast_helper;
   let loc = Location.none;
-  [%expr [%e Ast_helper.Exp.ident (Location.mknoloc (Longident.Lident name))] arg1];
+  let rec loop n => if (n < 1) {[]} else {[(Asttypes.Nolabel, ident ("arg" ^ (string_of_int (count - n + 1)))), ...loop (n - 1)]};
+  Exp.apply (ident name) (loop count);
 };
+
 let make_arg_pattern count => {
   open Parsetree;
   let loc = Location.none;
-  [%pat ? arg1];
+  switch count {
+  | 1 => [%pat ? arg1];
+  | _ => {
+    let rec loop n => if (n < 1) {[]} else {[Ast_helper.Pat.var (Location.mknoloc ("arg" ^ (string_of_int (count - n + 1)))), ...loop (n - 1)]};
+    Ast_helper.Pat.tuple (loop count)
+  }
+  }
 };
 
 let test_diff test pos => {
@@ -55,8 +66,8 @@ let test_diff test pos => {
     | None => [%expr {
       let (fname, line, col) = [%e pos];
       fun _ _ =>
-        "    unexpected output: (add @@test.show to display)\n"
-        "    at:                " ^ fname ^ ":" ^ (string_of_int line) ^ ":" ^ (string_of_int col)
+        "    unexpected output: (add @@test.show to display)\n" ^
+        "    at:                " ^ fname ^ " " ^ (string_of_int line) ^ "," ^ (string_of_int col)
     }] /* TODO if bucklescript, to js.log here */
   }
 };

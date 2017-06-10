@@ -13,8 +13,8 @@ let tap_reporter = {
   [%stri let _ = {
     print_endline "TAP version 13";
     let si = string_of_int;
-    let (total, errs) = List.fold_left
-    (fun (total, errs) (name, fns) => {
+    let (total, errs) = List.fold_right
+    (fun  (name, fns)(total, errs) => {
       print_endline ("# " ^ name);
       List.fold_left
       (fun (total, errs) fn => {
@@ -43,8 +43,8 @@ let tap_reporter = {
       (total, errs)
       fns
     })
-    (0, 0)
-    !tests;
+    !tests
+    (0, 0);
     print_endline ("1.." ^ (si (total)));
     print_endline ("# tests " ^ (si total));
     print_endline ("# pass " ^ (si (total - errs)));

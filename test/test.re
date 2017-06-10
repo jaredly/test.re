@@ -21,3 +21,6 @@ and other n => 3 * n
 ]]
 [@@test.diff fun a b => ("wanted " ^ (string_of_int a) ^ " instead of " ^ (string_of_int b))]
 ;
+
+let multi a b => a * b
+[@@test [((1,2), 2), ((3,4), 12), ((5,6), 7)]];
