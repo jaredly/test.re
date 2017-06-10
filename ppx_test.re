@@ -14,8 +14,8 @@ let make_final_test_block tests => {
           switch failure {
           | None => (total + 1, errs)
           | Some text => {
-            print_endline name;
-            print_endline subname;
+            /*print_endline name;*/
+            /*print_endline subname;*/
             print_endline text;
             (total + 1, errs + 1)
           }
@@ -223,7 +223,7 @@ let process_fixtures fixtures named name test_name args test => {
     | None => fail "Must use @@test.call with functions that have labels"
     }
   };
-  let fixture_args = named ? [%pat ? (name, input, expected)] : [%pat ? (input, expected)];
+  let fixture_args = named ? [%pat ? (input, expected, name)] : [%pat ? (input, expected)];
   let fixture_name = named ? [%expr name] : [%expr string_of_int i];
   let compare = switch (test.compare) {
     | Some expr => expr
