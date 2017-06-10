@@ -32,6 +32,13 @@ let process attributes => {
         | _ => Utils.fail "multiple @@test annotations found"
         }
       }
+    | "test.item_name" => {
+        let expr = require_payload_expr payload;
+        switch (test.item_name) {
+        | None => {...test, item_name: Some expr}
+        | _ => Utils.fail "multiple @@test.item_name annotations found"
+        }
+    }
     | "test.named" => {
         let expr = require_payload_expr payload;
         switch (test.named_fixtures) {

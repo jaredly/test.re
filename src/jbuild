@@ -2,6 +2,6 @@
 
 (executable
  ((name ppx_test)
-  (libraries (compiler-libs.common))
+  (libraries (compiler-libs.common unix str))
   (preprocess (pps (ppx_metaquot -no-check)))
   ))

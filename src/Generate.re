@@ -22,16 +22,25 @@ let make_arg_pattern count => {
 let test_diff test => {
   let loc = Location.none;
   open Test;
+  open Parsetree;
   switch (test.diff) {
-  | Some expr => expr
+  | Some expr => [%expr {
+    let message = [%e expr];
+    fun expected result =>
+          "    custom message: " ^ (message expected result) ^ "\n" ^
+          "    test location: TODO"
+  }]
   | None => switch (test.show) {
     | Some expr => {
       [%expr {
         let show = [%e expr];
-        fun expected result => "Got " ^ (show result) ^ ", expected " ^ (show expected)
+        fun expected result =>
+          "    expected: " ^ (show expected) ^ "\n" ^
+          "    actual:   " ^ (show result) ^ "\n" ^
+          "    test location: TODO"
       }]
     }
-    | None => [%expr fun _ _ => "unexpected output"] /* TODO if bucklescript, to js.log here */
+    | None => [%expr fun _ _ => "    unexpected output: (add @@test.show to display)"] /* TODO if bucklescript, to js.log here */
   }
 };
 };
@@ -49,14 +58,19 @@ let process_fixtures fixtures named name test_name args test => {
     }
   };
   let fixture_args = named ? [%pat ? (input, expected, name)] : [%pat ? (input, expected)];
-  let fixture_name = named ? [%expr name] : [%expr string_of_int i];
   let compare = switch (test.compare) {
     | Some expr => expr
     | None => [%expr fun expected result => expected == result]
   };
   let diff = test_diff test;
+  let item_name = switch (test.item_name) {
+  | Some expr => [%expr fun i input output => [%e expr] input output]
+  | None => [%expr fun i _ _ => "fixture " ^ (string_of_int i)]
+  };
+  let fixture_name = named ? [%expr name] : [%expr item_name i input expected];
 
   [%expr fun () => {
+    let item_name = [%e item_name];
     let compare = [%e compare];
     let diff = [%e diff];
     let call = [%e call];

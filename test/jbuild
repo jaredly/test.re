@@ -18,3 +18,9 @@
   (deps (test_actual.exe))
   (action (with-outputs-to ${@} (run ${<})))
 ))
+
+(alias (
+  (name runtest)
+  (deps (test_actual.exe))
+  (action (system "./${<} | tap-spec"))
+))

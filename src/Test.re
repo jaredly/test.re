@@ -2,6 +2,7 @@
 type t = {
   fixtures: option Parsetree.expression,
   named_fixtures: option Parsetree.expression,
+  item_name: option Parsetree.expression,
   skipif: option Parsetree.expression,
   skip: option string,
   only: bool,
@@ -14,7 +15,7 @@ type t = {
   name: option string,
 };
 
-let empty = {fixtures: None, named_fixtures: None, call: None, diff: None, show: None, compare: None, checks: [], name: None, skip: None, todo: None, skipif: None, only: false};
+let empty = {item_name: None, fixtures: None, named_fixtures: None, call: None, diff: None, show: None, compare: None, checks: [], name: None, skip: None, todo: None, skipif: None, only: false};
 
 let validate test => switch test {
 | {fixtures: None, named_fixtures: None, diff: None, show: None, compare: None, checks: [], name: None, call: None} => None

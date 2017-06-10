@@ -1,19 +1,27 @@
 
+let rec blank num => if (num == 0) {""} else {" " ^ (blank (num - 1))};
+let newline = Str.regexp "\n";
+
+let indent num text => {
+  let white = blank num;
+  white ^ (Str.global_replace newline (white ^ "\n") text);
+};
 
 let tap_reporter = {
   let loc = Location.none;
   open Parsetree;
   [%stri let _ = {
+    print_endline "TAP version 13";
     let si = string_of_int;
     let (total, errs) = List.fold_left
     (fun (total, errs) (name, fns) => {
-      print_endline ("# section: " ^ name);
+      print_endline ("# " ^ name);
       List.fold_left
       (fun (total, errs) fn => {
         let (name, results) = fn ();
         List.fold_left
         (fun (total, errs) (subname, failure) => {
-          let description = (string_of_int (total + 1)) ^ " " ^ name ^ ": " ^ subname;
+          let description = (string_of_int (total + 1)) ^ " " ^ subname;
           /*print_endline ("test " ^ name ^ " : " ^ subname);*/
           switch failure {
           | None => {
@@ -22,6 +30,9 @@ let tap_reporter = {
           }
           | Some text => {
             print_endline ("not ok " ^ description);
+            print_endline ("  ---");
+            print_endline (text);
+            print_endline ("  ...");
             (total + 1, errs + 1)
           }
           }

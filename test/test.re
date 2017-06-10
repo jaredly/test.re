@@ -5,6 +5,7 @@ let awesome n => n * 2
   (4, 8),
   (-2, -5),
 ]]
+[@@test.item_name fun input _ => "input " ^ (string_of_int input)]
 [@@test.named [
   (0, 0, "null case"),
   (1, 2, "simple"),
