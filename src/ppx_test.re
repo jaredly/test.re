@@ -27,6 +27,9 @@
  * [@@test.todo "explanation"]
  * [@@test.skipif true === true]
  * 
+ * ; custom calling, for functions with labels, or things that can't be inferred
+ * [@@test.call fun input => myfun input 3]
+ * 
  * [@@@test.run {
  *   print_endline "do arbitrary things"
  * }]
@@ -34,8 +37,12 @@
  * main() [@@test.hide];
  */
 
-let make_final_test_block tests => Injected.tap_reporter;
+/**
+ * I'm wondering if some of these checks ought to be scoped to a specific set of fixtures.
+ * That is, should I be able to set up multiple tests for a single function?
+ */
 
+let make_final_test_block tests => Injected.tap_reporter;
 
 let rec count_args {Parsetree.pexp_desc} => Parsetree.(switch pexp_desc {
 | Pexp_fun Nolabel _ _ expr => switch (count_args expr) {
@@ -46,7 +53,6 @@ let rec count_args {Parsetree.pexp_desc} => Parsetree.(switch pexp_desc {
 | _ => Some 0
 });
 
-/* TODO allow ppl to just say [@@test.arity 3] if they want explicit, and then it doesn't need to be a function literal */
 let getInfo {Parsetree.pvb_pat, pvb_expr} => {
   open Parsetree;
   switch (pvb_pat.ppat_desc) {
@@ -91,31 +97,6 @@ let tests_for_bindings mapper bindings => {
   []
   bindings
 };
-
-/*let tests_for_bindings mapper bindings => {
-  open Parsetree;
-  List.fold_left
-  (fun tests binding => {
-    let test = ProcessAttributes.process binding.pvb_attributes;
-    switch (validate test) {
-    | None => tests
-    | Some test => {
-      switch (getInfo binding) {
-      | None => fail "test attributes on a non-function"
-      | Some (name, args) => {
-        let test_name = Utils.optor test.name name;
-        switch (process_test name test_name args test) {
-        | None => tests
-        | Some str => [str, ...tests]
-        }
-      }
-      }
-    }
-    }
-  })
-  []
-  bindings
-};*/
 
 let test_mapper argv => {
   Parsetree.{
