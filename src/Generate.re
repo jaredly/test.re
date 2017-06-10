@@ -102,14 +102,8 @@ let test name test_name args test => {
   open Test;
   open Parsetree;
   let checks = List.mapi (process_check test_name) test.checks;
-  let checks = switch (test.fixtures) {
-  | None => checks
-  | Some fixtures => [process_fixtures fixtures false name test_name args test, ...checks]
-  };
-  let checks = switch (test.named_fixtures) {
-  | None => checks
-  | Some fixtures => [process_fixtures fixtures true name test_name args test, ...checks]
-};
+  let checks = List.fold_left (fun checks expr => [process_fixtures expr false name test_name args test, ...checks]) checks test.fixtures;
+  let checks = List.fold_left (fun checks expr => [process_fixtures expr true name test_name args test, ...checks]) checks test.named_fixtures;
   switch checks {
   | [] => None
   | _ => Some [%stri let _ = tests := [([%e str_exp name], [%e make_list checks]), ...!tests]]

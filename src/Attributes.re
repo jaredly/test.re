@@ -27,10 +27,11 @@ let process attributes => {
     switch name.Location.txt {
     | "test" => {
         let expr = require_payload_expr payload;
-        switch (test.fixtures) {
-        | None => {...test, fixtures: Some expr}
-        | _ => Utils.fail "multiple @@test annotations found"
-        }
+        {...test, fixtures: [expr, ...test.fixtures]}
+      }
+    | "test.named" => {
+        let expr = require_payload_expr payload;
+        {...test, named_fixtures: [expr, ...test.named_fixtures]}
       }
     | "test.item_name" => {
         let expr = require_payload_expr payload;
@@ -39,13 +40,6 @@ let process attributes => {
         | _ => Utils.fail "multiple @@test.item_name annotations found"
         }
     }
-    | "test.named" => {
-        let expr = require_payload_expr payload;
-        switch (test.named_fixtures) {
-        | None => {...test, named_fixtures: Some expr}
-        | _ => Utils.fail "multiple @@test.named annotations found"
-        }
-      }
     | "test.call" => {
         let expr = require_payload_expr payload;
         switch (test.call) {
