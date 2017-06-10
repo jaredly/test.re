@@ -3,14 +3,29 @@ let make_final_test_block tests => {
   open Parsetree;
   [%stri let _ = {
     let (total, errs) = List.fold_left
-    (fun (total, errs) (name, fn) => {
-      switch (fn ()) {
-      | Some err => {
-        print_endline err;
-        (total + 1, errs + 1)
-      }
-      | None => (total + 1, errs)
-      }
+    (fun (total, errs) (name, fns) => {
+      print_endline ("section: " ^ name);
+      List.fold_left
+      (fun (total, errs) fn => {
+        let (name, results) = fn ();
+        List.fold_left
+        (fun (total, errs) (subname, failure) => {
+          print_endline ("test " ^ name ^ " : " ^ subname);
+          switch failure {
+          | None => (total + 1, errs)
+          | Some text => {
+            print_endline name;
+            print_endline subname;
+            print_endline text;
+            (total + 1, errs + 1)
+          }
+          }
+        })
+        (total, errs)
+        results
+      })
+      (total, errs)
+      fns
     })
     (0, 0)
     !tests;
@@ -60,8 +75,12 @@ type test = {
   name: option string,
 };
 
+exception Badness string;
+
+let fail x => raise (Badness x);
+
 let payload_expr payload => switch payload {
-| Pstr [{pstr_desc: Pstr_eval (expr, _)}] => Some expr
+| Parsetree.PStr [{pstr_desc: Pstr_eval expr _}] => Some expr
 | _ => None
 };
 
@@ -71,7 +90,7 @@ let require_payload_expr payload => switch (payload_expr payload) {
 };
 
 let require_payload_string payload => switch payload {
-| Pstr [{pstr_desc: Pstr_eval ({pexp_desc: Pexp_constant (Pconst_string value)})}] => value
+| Parsetree.PStr [{pstr_desc: Pstr_eval {pexp_desc: Pexp_constant (Pconst_string value None)} []}] => value
 | _ => fail "@@test.name payload must be a string"
 };
 
@@ -83,7 +102,7 @@ let process_check_expr expr => {
 let process_attributes attributes => {
   List.fold_left
   (fun test (name, payload) => {
-    switch name {
+    switch name.Location.txt {
     | "test" => {
         let expr = require_payload_expr payload;
         switch (test.fixtures) {
@@ -137,9 +156,10 @@ let process_attributes attributes => {
         let expr = require_payload_expr payload;
         {...test, checks: [(process_check_expr expr), ...test.checks]}
       }
+    | _ => test
     }
   })
-  {fixtures: None, diff: None, show: None, compare: None, checks: [], name: None};
+  {fixtures: None, named_fixtures: None, call: None, diff: None, show: None, compare: None, checks: [], name: None}
   attributes
 };
 
@@ -156,27 +176,46 @@ let validate test => switch test {
 
 let optor opt orr => switch opt { |None => orr| Some x => x};
 
+let str_exp str => Ast_helper.Exp.constant (Pconst_string str None);
+
 let process_check name i (cname, body) => {
-  let cname = optor cname (string_of_int i)
-  [%expr fun () => ([%e name], [([%e cname], [%e body])])]
+  open Parsetree;
+  let loc = Location.none;
+  let cname = optor cname (string_of_int i);
+  [%expr fun () => ([%e str_exp name], [([%e str_exp cname], [%e body])])]
 };
 
-let make_fncall name count => [%expr [%e name] arg1];
-let make_arg_pattern count => [%pat ? arg1];
+let make_fncall name count => {
+  open Parsetree;
+  let loc = Location.none;
+  [%expr [%e Ast_helper.Exp.ident (Location.mknoloc (Longident.Lident name))] arg1];
+};
+let make_arg_pattern count => {
+  open Parsetree;
+  let loc = Location.none;
+  [%pat ? arg1];
+};
 
-let test_diff test => switch (test.diff) {
+let test_diff test => {
+      let loc = Location.none;
+  switch (test.diff) {
   | Some expr => expr
   | None => switch (test.show) {
-    | Some expr => [%expr {
+    | Some expr => {
+      [%expr {
         let show = [%e expr];
         fun expected result => "Got " ^ (show result) ^ ", expected " ^ (show expected)
       }]
+    }
     | None => [%expr fun _ _ => "unexpected output"] /* TODO if bucklescript, to js.log here */
   }
+};
 };
 
 /* TODO allow multiple fixtures definitions? And just chain them... */
 let process_fixtures fixtures named name test_name args test => {
+  open Parsetree;
+  let loc = Location.none;
   let call = switch (test.call) {
   | Some expr => expr
   | None => switch args {
@@ -196,21 +235,32 @@ let process_fixtures fixtures named name test_name args test => {
     let compare = [%e compare];
     let diff = [%e diff];
     let call = [%e call];
-    ([%e test_name], List.mapi
+    ([%e str_exp test_name], List.mapi
     (fun i [%p fixture_args] => {
       let result = call input;
       if (compare expected result) {
         /* TODO allow custom "name"s from arguments, test.fixture.name input => string */
-        [[%e fixture_name], None]
+        ([%e fixture_name], None)
       } else {
-        [[%e fixture_name], Some ()]
+        ([%e fixture_name], Some (diff expected result))
       }
     })
     [%e fixtures])
   }]
 };
 
+let rec make_list checks => {
+  open Parsetree;
+  let loc = Location.none;
+  switch checks {
+| [] => [%expr []]
+| [item, ...rest] => [%expr [[%e item], ...[%e make_list rest]]]
+  }
+};
+
 let process_test name test_name args test => {
+  let loc = Location.none;
+  open Parsetree;
   let checks = List.mapi (process_check test_name) test.checks;
   let checks = switch (test.fixtures) {
   | None => checks
@@ -219,24 +269,28 @@ let process_test name test_name args test => {
   let checks = switch (test.named_fixtures) {
   | None => checks
   | Some fixtures => [process_fixtures fixtures true name test_name args test, ...checks]
-  };
-  checks
+};
+  switch checks {
+  | [] => None
+  | _ => Some [%stri let _ = tests := [([%e str_exp name], [%e make_list checks]), ...!tests]]
+  }
 };
 
-let rec count_args {pexp_desc} => switch pexp_desc {
-| Pexp_fun ("", _, _, expr) => switch (count_args expr) {
+let rec count_args {Parsetree.pexp_desc} => Parsetree.(switch pexp_desc {
+| Pexp_fun Nolabel _ _ expr => switch (count_args expr) {
   | Some n => Some (1 + n)
   | None => None
 }
 | Pexp_fun _ => None
-| _ => 0
-};
+| _ => Some 0
+});
 
 /* TODO allow ppl to just say [@@test.arity 3] if they want explicit, and then it doesn't need to be a function literal */
-let getInfo {pvb_pat, pvb_expr} => {
+let getInfo {Parsetree.pvb_pat, pvb_expr} => {
+  open Parsetree;
   switch (pvb_pat.ppat_desc) {
   | Ppat_var {txt} => switch (pvb_expr.pexp_desc) {
-    | Pexp_fun ("", _, _, expr) => switch (count_args expr) {
+    | Pexp_fun Nolabel _ _ expr => switch (count_args expr) {
         | Some n => Some (txt, Some (1 + n))
         | None => Some (txt, None)
       }
@@ -248,43 +302,29 @@ let getInfo {pvb_pat, pvb_expr} => {
 };
 
 let process_bindings mapper bindings => {
+  open Parsetree;
   List.fold_left
   (fun tests binding => {
     let test = process_attributes binding.pvb_attributes;
     switch (validate test) {
     | None => tests
     | Some test => {
-      switch (getInfo body) {
+      switch (getInfo binding) {
       | None => fail "test attributes on a non-function"
       | Some (name, args) => {
         let test_name = optor test.name name;
-        (process_test name test_name args test) @ tests;
+        switch (process_test name test_name args test) {
+        | None => tests
+        | Some str => [str, ...tests]
+        }
       }
       }
     }
     }
-    /*switch (getInfo binding) {
-    | None => switch (name, body) {
-      | (None, None) => tests
-      | _ => raise "bad ness"
-    }
-    | Some (fname, args) => {
-        let name = switch (name) { |None => fname | Some name => name};
-      }
-    }
-    switch (test.body) {
-    | None => tests
-    | Some body => {
-      let name = switch (test.name) {
-      | Some name => name
-      | None => binding.
-      }
-    }
-    }*/
   })
   []
   bindings
-}
+};
 
 
 let getenv_mapper argv => {
@@ -296,10 +336,9 @@ let getenv_mapper argv => {
       let (backwards, tests) = List.fold_left (fun (results, tests) item => {
         switch (item.Parsetree.pstr_desc) {
         | Pstr_value _ bindings => {
-          let test_strs = [];
-          /*process_bindings mapper bindings;*/
+          let test_strs = process_bindings mapper bindings;
           (test_strs @ [
-            [%stri let _ = tests := [("hello", fun () => Some "Failed"), ...!tests]],
+            /*[%stri let _ = tests := [("hello", fun () => Some "Failed"), ...!tests]],*/
             Ast_mapper.default_mapper.structure_item mapper item,
             ...results
           ], tests + 1)
