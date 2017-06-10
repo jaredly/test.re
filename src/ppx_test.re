@@ -42,8 +42,6 @@
  * That is, should I be able to set up multiple tests for a single function?
  */
 
-let make_final_test_block tests => Injected.tap_reporter;
-
 let rec count_args {Parsetree.pexp_desc} => Parsetree.(switch pexp_desc {
 | Pexp_fun Nolabel _ _ expr => switch (count_args expr) {
   | Some n => Some (1 + n)

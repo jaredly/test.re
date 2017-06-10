@@ -13,7 +13,7 @@ let awesome n => n * 2
 ]]
 [@@test.show string_of_int]
 [@@test.check {
-  Some "failure"
+  Some "    failure: thing"
 }]
 and other n => 3 * n
 [@@test [

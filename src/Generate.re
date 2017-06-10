@@ -1,10 +1,20 @@
 
+let int_exp num => Ast_helper.Exp.constant (Pconst_integer (string_of_int num) None);
+
 let str_exp str => Ast_helper.Exp.constant (Pconst_string str None);
+
+let get_pos expr => {
+  open Parsetree;
+  let loc = Location.none;
+  let pos = expr.Parsetree.pexp_loc.Location.loc_start;
+  [%expr ([%e str_exp (pos.Lexing.pos_fname)], [%e int_exp (pos.Lexing.pos_lnum)], [%e int_exp (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)])]
+};
 
 let process_check name i (cname, body) => {
   open Parsetree;
   let loc = Location.none;
   let cname = Utils.optor cname (string_of_int i);
+  let pos = get_pos body;
   [%expr fun () => ([%e str_exp name], [([%e str_exp cname], [%e body])])]
 };
 
@@ -19,31 +29,40 @@ let make_arg_pattern count => {
   [%pat ? arg1];
 };
 
-let test_diff test => {
+let test_diff test pos => {
   let loc = Location.none;
   open Test;
   open Parsetree;
   switch (test.diff) {
   | Some expr => [%expr {
     let message = [%e expr];
+    let (fname, line, col) = [%e pos];
     fun expected result =>
           "    custom message: " ^ (message expected result) ^ "\n" ^
-          "    test location: TODO"
+          "    at:             " ^ fname ^ " " ^ (string_of_int line) ^ "," ^ (string_of_int col)
   }]
   | None => switch (test.show) {
     | Some expr => {
       [%expr {
         let show = [%e expr];
+        let (fname, line, col) = [%e pos];
         fun expected result =>
           "    expected: " ^ (show expected) ^ "\n" ^
           "    actual:   " ^ (show result) ^ "\n" ^
-          "    test location: TODO"
+          "    at:       " ^ fname ^ " " ^ (string_of_int line) ^ "," ^ (string_of_int col)
       }]
     }
-    | None => [%expr fun _ _ => "    unexpected output: (add @@test.show to display)"] /* TODO if bucklescript, to js.log here */
+    | None => [%expr {
+      let (fname, line, col) = [%e pos];
+      fun _ _ =>
+        "    unexpected output: (add @@test.show to display)\n"
+        "    at:                " ^ fname ^ ":" ^ (string_of_int line) ^ ":" ^ (string_of_int col)
+    }] /* TODO if bucklescript, to js.log here */
   }
 };
 };
+
+
 
 /* TODO allow multiple fixtures definitions? And just chain them... */
 let process_fixtures fixtures named name test_name args test => {
@@ -62,7 +81,9 @@ let process_fixtures fixtures named name test_name args test => {
     | Some expr => expr
     | None => [%expr fun expected result => expected == result]
   };
-  let diff = test_diff test;
+
+  let pos = get_pos fixtures;
+  let diff = test_diff test pos;
   let item_name = switch (test.item_name) {
   | Some expr => [%expr fun i input output => [%e expr] input output]
   | None => [%expr fun i _ _ => "fixture " ^ (string_of_int i)]
@@ -78,7 +99,6 @@ let process_fixtures fixtures named name test_name args test => {
     (fun i [%p fixture_args] => {
       let result = call input;
       if (compare expected result) {
-        /* TODO allow custom "name"s from arguments, test.fixture.name input => string */
         ([%e fixture_name], None)
       } else {
         ([%e fixture_name], Some (diff expected result))
