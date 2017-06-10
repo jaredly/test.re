@@ -1,7 +1,1 @@
 (jbuild_version 1)
-
-(executable
- ((name ppx_test)
-  (libraries (compiler-libs.common))
-  (preprocess (pps (ppx_metaquot -no-check)))
-  ))
