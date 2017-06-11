@@ -10,7 +10,7 @@
 (rule (
   (targets (test_actual.ml))
   (deps (test_.ml))
-  (action (with-outputs-to test_actual.ml (system "ocamlc -dsource -ppx ${exe:../src/ppx_test.exe} -impl ${<}")))
+  (action (with-outputs-to test_actual.ml (system "ocamlc -dsource -ppx ${exe:../normal_ppx/ppx_test.exe} -impl ${<}")))
 ))
 
 (rule (

@@ -1,4 +1,6 @@
 
+open Migrate_parsetree.Ast_403;
+
 let rec blank num => if (num == 0) {""} else {" " ^ (blank (num - 1))};
 let newline = Str.regexp "\n";
 

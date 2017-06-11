@@ -1,7 +1,8 @@
 (jbuild_version 1)
 
-(executable
- ((name ppx_test)
-  (libraries (compiler-libs.common unix str))
-  (preprocess (pps (ppx_metaquot -no-check)))
+(library
+ ((name ppx_test_lib)
+  (libraries (compiler-libs.common unix str ocaml-migrate-parsetree))
+  (preprocess (pps (ppx_tools_versioned.metaquot_403)))
   ))
+

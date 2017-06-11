@@ -1,4 +1,6 @@
 
+open Migrate_parsetree.Ast_403;
+
 let int_exp num => Ast_helper.Exp.constant (Pconst_integer (string_of_int num) None);
 
 let str_exp str => Ast_helper.Exp.constant (Pconst_string str None);

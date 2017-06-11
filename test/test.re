@@ -14,8 +14,8 @@ let awesome n => n * 2
 [@@test.show string_of_int]
 [@@test.check {
   Some "    failure: thing"
-}]
-and other n => 3 * n
+}];
+let other n => 3 * n
 [@@test [
   (2, 4),
 ]]

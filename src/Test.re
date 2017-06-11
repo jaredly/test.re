@@ -1,4 +1,6 @@
 
+open Migrate_parsetree.Ast_403;
+
 type t = {
   fixtures: list Parsetree.expression,
   named_fixtures: list Parsetree.expression,
