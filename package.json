@@ -1,0 +1,39 @@
+{
+  "name": "test.re",
+  "version": "0.0.1",
+  "description": "Easy inline tests",
+  "author": "Jared Forsyth <jared@jaredforsyth.com>",
+  "license": "MIT",
+  "scripts": {
+    "watch": "esy b && esy jbuilder exec test",
+    "watcher": "watchexec -w lib -w bin npm run watch -- -s",
+    "rebuild": "esy ocamllex lib/NpmLexer.mll && esy menhir lib/NpmParser.mly"
+  },
+  "esy": {
+    "build": [
+      ["jbuilder", "build"]
+    ],
+    "install": [
+      "esy-installer"
+    ],
+    "buildsInSource": "_build"
+  },
+  "dependencies": {
+    "@opam/ocaml-migrate-parsetree": "*",
+    "@opam/ppx_tools_versioned": "*",
+    "@opam/ocamlbuild": "*"
+  },
+  "buildDependencies": {
+    "@opam/jbuilder": "^1.0.0-beta16",
+    "@opam/reason": "3.0.4",
+    "@esy-ocaml/esy-installer": "^0.0.0"
+  },
+  "peerDependencies": {
+    "ocaml": "~4.6.000"
+  },
+  "devDependencies": {
+    "@opam/merlin": "^3.0.5",
+    "ocaml": "~4.6.000"
+  },
+  "private": true
+}

@@ -3,6 +3,6 @@
 (library
  ((name ppx_test_lib)
   (libraries (compiler-libs.common unix str ocaml-migrate-parsetree))
-  (preprocess (pps (ppx_tools_versioned.metaquot_403)))
+  (preprocess (pps (ppx_tools_versioned.metaquot_406)))
   ))
 

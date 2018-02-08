@@ -4,6 +4,7 @@ let awesome n => n * 2;
 
 let _ = tests := [("hello", fun () => Some "Failed"), ...!tests];
 
+/* awesome*/
 let _ = {
   let (total, errs) =
     List.fold_left
