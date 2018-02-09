@@ -1,0 +1,8 @@
+(jbuild_version 1)
+
+(executable
+ ((name Test)
+  (libraries (Src TestRe))
+  (modes (byte))
+  ))
+

@@ -1,8 +1,8 @@
 (jbuild_version 1)
 
 (library
- ((name ppx_test_lib)
+ ((name PpxMapper)
+  (public_name testre-ppx.mapper)
   (libraries (compiler-libs.common unix str ocaml-migrate-parsetree))
   (preprocess (pps (ppx_tools_versioned.metaquot_406)))
   ))
-

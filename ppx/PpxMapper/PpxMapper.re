@@ -35,15 +35,15 @@ let getInfo = ({Parsetree.pvb_pat, pvb_expr}) =>
     }
   );
 
-let printLoc = ({Location.loc_start: {Lexing.pos_fname, pos_lnum, pos_bol, pos_cnum}}) => {
-  pos_fname ++ ":" ++ string_of_int(pos_lnum) ++ ":" ++ string_of_int(pos_cnum - pos_bol)
+let makeLoc = ({Location.loc_start: {Lexing.pos_fname, pos_lnum, pos_bol, pos_cnum}}) => {
+  (pos_fname, (pos_lnum, pos_cnum - pos_bol))
 };
 
 let tests_for_binding = (mapper, binding) => {
   open Parsetree;
   let test = {
     ...Attributes.process(binding.pvb_attributes),
-    location: printLoc(binding.pvb_loc)
+    location: makeLoc(binding.pvb_loc)
   };
   switch (Test.validate(test)) {
   | None => None
@@ -52,7 +52,7 @@ let tests_for_binding = (mapper, binding) => {
     | None => Utils.fail("test attributes on a non-function")
     | Some((name, args)) =>
       let test_name = Utils.optor(test.name, name);
-      switch (Generate.test(name, test_name, test.location, args, test)) {
+      switch (Generate.test(name, test.location, test_name, args, test)) {
       | None => None
       | Some(str) => Some(str)
       }
@@ -76,7 +76,7 @@ let mapper =
     ...Ast_mapper.default_mapper,
 
     structure: (mapper, items) => {
-      let loc = Location.none;
+      /* let loc = Location.none; */
       let (backwards, tests) =
         List.fold_left(
           ((results, tests), item) => {
@@ -94,10 +94,11 @@ let mapper =
           items
         );
 
-      switch tests {
+      List.rev(backwards)
+      /* switch tests {
       | 0 => List.rev(backwards)
       | _ => [[%stri let tests = ref([])], ...List.rev([Injected.tap_reporter, ...backwards])]
-      }
+      } */
 
     }
   };

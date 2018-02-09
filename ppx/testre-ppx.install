@@ -1,0 +1,50 @@
+lib: [
+  "_build/install/default/lib/testre-ppx/META" {"META"}
+  "_build/install/default/lib/testre-ppx/opam" {"opam"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Attributes.cmi" {"mapper/PpxMapper__Attributes.cmi"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Attributes.cmx" {"mapper/PpxMapper__Attributes.cmx"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Attributes.cmt" {"mapper/PpxMapper__Attributes.cmt"}
+  "_build/install/default/lib/testre-ppx/mapper/Attributes.re" {"mapper/Attributes.re"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Generate.cmi" {"mapper/PpxMapper__Generate.cmi"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Generate.cmx" {"mapper/PpxMapper__Generate.cmx"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Generate.cmt" {"mapper/PpxMapper__Generate.cmt"}
+  "_build/install/default/lib/testre-ppx/mapper/Generate.re" {"mapper/Generate.re"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Injected.cmi" {"mapper/PpxMapper__Injected.cmi"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Injected.cmx" {"mapper/PpxMapper__Injected.cmx"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Injected.cmt" {"mapper/PpxMapper__Injected.cmt"}
+  "_build/install/default/lib/testre-ppx/mapper/Injected.re" {"mapper/Injected.re"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.cmi" {"mapper/PpxMapper.cmi"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.cmx" {"mapper/PpxMapper.cmx"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.cmt" {"mapper/PpxMapper.cmt"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.re" {"mapper/PpxMapper.re"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__.cmi" {"mapper/PpxMapper__.cmi"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__.cmx" {"mapper/PpxMapper__.cmx"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__.cmt" {"mapper/PpxMapper__.cmt"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__.ml-gen" {"mapper/PpxMapper__.ml-gen"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Test.cmi" {"mapper/PpxMapper__Test.cmi"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Test.cmx" {"mapper/PpxMapper__Test.cmx"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Test.cmt" {"mapper/PpxMapper__Test.cmt"}
+  "_build/install/default/lib/testre-ppx/mapper/Test.re" {"mapper/Test.re"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Utils.cmi" {"mapper/PpxMapper__Utils.cmi"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Utils.cmx" {"mapper/PpxMapper__Utils.cmx"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper__Utils.cmt" {"mapper/PpxMapper__Utils.cmt"}
+  "_build/install/default/lib/testre-ppx/mapper/Utils.re" {"mapper/Utils.re"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.cma" {"mapper/PpxMapper.cma"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.cmxa" {"mapper/PpxMapper.cmxa"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.a" {"mapper/PpxMapper.a"}
+  "_build/install/default/lib/testre-ppx/mapper/PpxMapper.cmxs" {"mapper/PpxMapper.cmxs"}
+  "_build/install/default/lib/testre-ppx/ppx_universal.cmi"
+  "_build/install/default/lib/testre-ppx/ppx_universal.cmx"
+  "_build/install/default/lib/testre-ppx/ppx_universal.cmt"
+  "_build/install/default/lib/testre-ppx/ppx_universal.re"
+  "_build/install/default/lib/testre-ppx/ppx_universal.cma"
+  "_build/install/default/lib/testre-ppx/ppx_universal.cmxa"
+  "_build/install/default/lib/testre-ppx/ppx_universal.a"
+  "_build/install/default/lib/testre-ppx/ppx_universal.cmxs"
+]
+libexec: [
+  "_build/install/default/lib/testre-ppx/ppx.exe"
+]
+bin: [
+  "_build/install/default/bin/testre-ppx2" {"testre-ppx2"}
+]

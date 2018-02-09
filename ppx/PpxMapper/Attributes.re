@@ -47,7 +47,7 @@ let process = (attributes) =>
         | None => {...test, call: Some(expr)}
         | _ => Utils.fail("multiple @@test.call annotations found")
         }
-      | "test.show" =>
+      | "test.print" =>
         let expr = require_payload_expr(payload);
         switch test.show {
         | None => {...test, show: Some(expr)}
@@ -89,9 +89,12 @@ let process = (attributes) =>
         | None => {...test, name: Some(name)}
         | _ => Utils.fail("multiple @@test.name annotations found")
         }
-      | "test.check" =>
+      | "test.bool" =>
         let expr = require_payload_expr(payload);
-        {...test, checks: [process_check_expr(expr), ...test.checks]}
+        {...test, bools: [expr, ...test.bools]}
+      | "test.custom" =>
+        let expr = require_payload_expr(payload);
+        {...test, customs: [process_check_expr(expr), ...test.customs]}
       | _ => test
       },
     Test.empty,

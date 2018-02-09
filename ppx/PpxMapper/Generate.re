@@ -17,12 +17,12 @@ let get_pos = (expr) => {
   ]
 };
 
-let process_check = (name, i, (cname, body)) => {
+let process_check = (i, (cname, body)) => {
   open Parsetree;
   let loc = Location.none;
-  let cname = Utils.optor(cname, string_of_int(i));
+  let cname = Utils.optor(cname, "custom-" ++ string_of_int(i));
   let pos = get_pos(body);
-  [%expr () => ([%e str_exp(name)], [([%e str_exp(cname)], [%e body])])]
+  [%expr ([%e str_exp(cname)], () => [%e body])]
 };
 
 let ident = (name) => Ast_helper.Exp.ident(Location.mknoloc(Longident.Lident(name)));
@@ -30,7 +30,7 @@ let ident = (name) => Ast_helper.Exp.ident(Location.mknoloc(Longident.Lident(nam
 let make_fncall = (name, count) => {
   open Parsetree;
   open Ast_helper;
-  let loc = Location.none;
+  /* let loc = Location.none; */
   let rec loop = (n) =>
     if (n < 1) {
       []
@@ -42,7 +42,7 @@ let make_fncall = (name, count) => {
 
 let make_arg_pattern = (count) => {
   open Parsetree;
-  let loc = Location.none;
+  /* let loc = Location.none; */
   switch count {
   | 1 => [%pat ? arg1]
   | _ =>
@@ -60,7 +60,7 @@ let make_arg_pattern = (count) => {
 };
 
 let test_diff = (test, pos) => {
-  let loc = Location.none;
+  /* let loc = Location.none; */
   Test.(
     Parsetree.(
       switch test.diff {
@@ -153,7 +153,7 @@ let process_fixtures = (fixtures, named, name, test_name, args, test) => {
     | Some(expr) => [%expr ((i, input, output) => [%e expr](input, output))]
     | None => [%expr ((i, _, _) => "fixture " ++ string_of_int(i))]
     };
-  let fixture_name = named ? [%expr name] : [%expr [%e item_name](i, input, expected)];
+  let fixture_name = named ? [%expr name] : [%expr item_name(i, input, expected)];
   [%expr
     () => {
       let item_name = [%e item_name];
@@ -180,7 +180,7 @@ let process_fixtures = (fixtures, named, name, test_name, args, test) => {
 
 let rec make_list = (checks) => {
   open Parsetree;
-  let loc = Location.none;
+  /* let loc = Location.none; */
   switch checks {
   | [] => [%expr []]
   | [item, ...rest] => [%expr [[%e item], ...[%e make_list(rest)]]]
@@ -191,29 +191,47 @@ let test = (name, location, test_name, args, test) => {
   let loc = Location.none;
   open Test;
   open Parsetree;
-  let checks = List.mapi(process_check(test_name), test.checks);
+  /* let checks = List.mapi(process_check, test.checks);
   let checks = checks @ List.map(expr => process_fixtures(expr, false, name, test_name, args, test), test.fixtures);
-  let checks = checks @ List.map(expr => process_fixtures(expr, true, name, test_name, args, test), test.named_fixtures);
-    /* List.fold_left(
-      (checks, expr) => [process_fixtures(expr, false, name, test_name, args, test), ...checks],
-      checks,
-      test.fixtures
-    ); */
-  /* let checks =
-    List.fold_left(
-      (checks, expr) => [process_fixtures(expr, true, name, test_name, args, test), ...checks],
-      checks,
-      test.named_fixtures
-    ); */
-  switch checks {
-  | [] => None
-  | _ => Some(
-    [%stri
+  let checks = checks @ List.map(expr => process_fixtures(expr, true, name, test_name, args, test), test.named_fixtures); */
+  let (fname, (lnum, cnum)) = location;
+
+  let (argpat, call) = switch test.call {
+  | Some(call) => ([%pat? input], [%expr [%e call](input)])
+  | None => switch args {
+    | Some(args) => (make_arg_pattern(args), make_fncall(name, args))
+    | None => failwith("Must have a @test.call when there are function arguments")
+    }
+  };
+
+  let fixtures = test.fixtures != []
+    ? [%expr List.map(
+        (([%p argpat], output)) => (None, None, (() => [%e call], output)),
+        List.concat([%e make_list(test.fixtures)])
+      )]
+    : [%expr []];
+  let fixtures = test.named_fixtures != []
+    ? [%expr [%e fixtures] @ (List.map(
+        (([%p argpat], output, name)) => (Some(name), None, (() => [%e call], output)),
+        List.concat([%e make_list(test.fixtures)])
+      ))] : fixtures;
+
+  let empty = test.fixtures == [] && test.named_fixtures == [];
+
+  if (empty) {
+    None
+  } else {
+    Some([%stri
       TestRe.add(
         ~name=[%e str_exp(name)],
-        ~location=[%e str_exp(location)],
-        [@e make_list(checks)]
-        awesome
+        ~location=([%e str_exp(fname)], ([%e int_exp(lnum)], [%e int_exp(cnum)])),
+        ~skip=false,
+        ~todo=?None,
+        ~print=?None,
+        ~diff=?None,
+        ~compare=(==),
+        ~fixtures=[%e fixtures],
+        ()
       )
     ])
   }

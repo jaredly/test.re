@@ -8,7 +8,7 @@
    Ast_mapper.register "awesoe"
      (fun args => migration.copy_mapper (Ppx_test_lib.TestMapper.mapper args));
  */
-open Migrate_parsetree.Ast_403;
+/* open Migrate_parsetree.Ast_403; */
 
 /*let foo_config : ref (option string) = ref None
 
@@ -27,14 +27,14 @@ let my_rewriter = (config, cookies) =>
       | None -> raise (Arg.Bad "-foo is mandatory")
       | Some foo -> foo
     in*/
-  Ppx_test_lib.TestMapper.mapper;
+  PpxMapper.mapper;
 
 /*(* Registration *)*/
 let () =
   Migrate_parsetree.Driver.register(
-    ~name="ppx_test",
+    ~name="testre-ppx",
     Migrate_parsetree.Versions.ocaml_406,
     my_rewriter
   );
 
-let () = Migrate_parsetree.Driver.run_as_ppx_rewriter();
+/* let () = Migrate_parsetree.Driver.run_as_ppx_rewriter(); */

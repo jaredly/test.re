@@ -35,4 +35,4 @@
  *
  * main() [@@test.hide];
  */
-let () = Ast_mapper.register("ppx_test", (args) => Ppx_test_lib.TestMapper.mapper);
+let () = Ast_mapper.register("ppx_test", (args) => PpxMapper.mapper);

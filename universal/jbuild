@@ -1,6 +1,0 @@
-(jbuild_version 1)
-
-(executable (
-  (name universal)
-  (libraries (ppx_test_lib compiler-libs ocaml-migrate-parsetree))
-))

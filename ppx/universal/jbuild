@@ -1,0 +1,16 @@
+(jbuild_version 1)
+
+; (executable (
+;   (name ppx_universal)
+;   (public_name testre-ppx)
+;   (libraries (PpxMapper compiler-libs ocaml-migrate-parsetree))
+; ))
+
+(library (
+  (name ppx_universal)
+  (public_name testre-ppx)
+  (kind ppx_rewriter)
+  (modules (ppx_universal))
+  (ppx_runtime_libraries (TestRe))
+  (libraries (PpxMapper TestRe compiler-libs ocaml-migrate-parsetree))
+))
