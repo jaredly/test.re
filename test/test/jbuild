@@ -3,6 +3,5 @@
 (executable
  ((name Test)
   (libraries (Src TestRe))
-  (modes (byte))
   ))
 

@@ -35,8 +35,13 @@ let getInfo = ({Parsetree.pvb_pat, pvb_expr}) =>
     }
   );
 
-let makeLoc = ({Location.loc_start: {Lexing.pos_fname, pos_lnum, pos_bol, pos_cnum}}) => {
-  (pos_fname, (pos_lnum, pos_cnum - pos_bol))
+let makeLoc = ({Location.loc_start: {Lexing.pos_fname: fname, pos_lnum, pos_bol, pos_cnum}}) => {
+  let fname = if (Filename.check_suffix(fname, ".re.ml")) {
+    String.sub(fname, 0, String.length(fname) - 3)
+  } else {
+    fname
+  };
+  (fname, (pos_lnum, pos_cnum - pos_bol))
 };
 
 let tests_for_binding = (mapper, binding) => {

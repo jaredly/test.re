@@ -1,5 +1,5 @@
 
-let module S_ = {
+let module Suites = {
   include Src.Something;
 };
 
@@ -7,4 +7,3 @@ let module S_ = {
 print_endline("Hello");
 TestRe.report();
 
-print_endline(string_of_int(List.length(TestRe.tests^)))
