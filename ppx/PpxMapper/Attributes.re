@@ -49,9 +49,9 @@ let process = (attributes) =>
         }
       | "test.print" =>
         let expr = require_payload_expr(payload);
-        switch test.show {
-        | None => {...test, show: Some(expr)}
-        | _ => Utils.fail("multiple @@test.show annotations found")
+        switch test.print {
+        | None => {...test, print: Some(expr)}
+        | _ => Utils.fail("multiple @@test.print annotations found")
         }
       | "test.diff" =>
         let expr = require_payload_expr(payload);

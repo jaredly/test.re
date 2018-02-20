@@ -59,7 +59,7 @@ let make_arg_pattern = (count) => {
   }
 };
 
-let test_diff = (test, pos) => {
+/* let test_diff = (test, pos) => {
   /* let loc = Location.none; */
   Test.(
     Parsetree.(
@@ -124,10 +124,10 @@ let test_diff = (test, pos) => {
       }
     )
   )
-};
+}; */
 
 /* TODO allow multiple fixtures definitions? And just chain them... */
-let process_fixtures = (fixtures, named, name, test_name, args, test) => {
+/* let process_fixtures = (fixtures, named, name, test_name, args, test) => {
   open Test;
   open Parsetree;
   let loc = Location.none;
@@ -176,7 +176,7 @@ let process_fixtures = (fixtures, named, name, test_name, args, test) => {
       )
     }
   ]
-};
+}; */
 
 let rec make_list = (checks) => {
   open Parsetree;
@@ -185,6 +185,44 @@ let rec make_list = (checks) => {
   | [] => [%expr []]
   | [item, ...rest] => [%expr [[%e item], ...[%e make_list(rest)]]]
   }
+};
+
+let getExpected = ({Parsetree.pexp_desc}) => Parsetree.(switch pexp_desc {
+| Pexp_construct({txt: Longident.Lident("::")}, Some({pexp_desc: Pexp_tuple([
+  {pexp_desc: Pexp_tuple([
+    _,
+    expected
+  ])},
+  ..._
+])})) => Some(expected)
+| _ => None
+});
+
+/* TODO infer a bunch more things */
+
+let intPrinter = [%expr (fmt, num) => Format.fprintf(fmt, "%d", num)];
+let strPrinter = [%expr (fmt, num) => Format.fprintf(fmt, "%S", num)];
+
+let inferOne = (expr) => Parsetree.(switch (getExpected(expr)) {
+| None => None
+| Some({pexp_desc: Pexp_constant(Pconst_integer(_))}) => Some(intPrinter)
+| Some({pexp_desc: Pexp_constant(Pconst_string(_))}) => Some(strPrinter)
+| _ => None
+});
+
+let inferPrinter = (fixtures, named_fixtures) => {
+  let rec loop = (f, nf) => switch (f, nf) {
+  | ([one, ...rest], two) => switch (inferOne(one)) {
+    | None => loop(rest, two)
+    | Some(x) => Some(x)
+    }
+  | ([], [two, ...rest]) =>  switch (inferOne(two)) {
+    | None => loop([], rest)
+    | Some(x) => Some(x)
+    }
+  | ([], []) => None
+  };
+  loop(fixtures, named_fixtures)
 };
 
 let test = (name, location, test_name, args, test) => {
@@ -200,8 +238,13 @@ let test = (name, location, test_name, args, test) => {
   | Some(call) => ([%pat? input], [%expr [%e call](input)])
   | None => switch args {
     | Some(args) => (make_arg_pattern(args), make_fncall(name, args))
-    | None => failwith("Must have a @test.call when there are function arguments")
+    | None => failwith("Must have a @test.call when there are named arguments")
     }
+  };
+
+  let printer = switch test.print {
+  | None => inferPrinter(test.fixtures, test.named_fixtures)
+  | Some(p) => Some(p)
   };
 
   let fixtures = test.fixtures != []
@@ -227,7 +270,10 @@ let test = (name, location, test_name, args, test) => {
         ~location=([%e str_exp(fname)], ([%e int_exp(lnum)], [%e int_exp(cnum)])),
         ~skip=false,
         ~todo=?None,
-        ~print=?None,
+        ~print=?[%e switch printer {
+        | None => [%expr None]
+        | Some(print) => [%expr Some([%e print])]
+        }],
         ~diff=?None,
         ~compare=(==),
         ~fixtures=[%e fixtures],

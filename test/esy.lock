@@ -487,7 +487,7 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
-TestRe@../runtime:
+"TestRe@file:../runtime":
   version "0.0.1"
   dependencies:
     "@esy-ocaml/esy-installer" "^0.0.0"
@@ -509,7 +509,7 @@ testre-ppx@../ppx:
     "@opam/ocamlbuild" "*"
     "@opam/ppx_tools_versioned" "*"
     "@opam/reason" "3.0.4"
-    TestRe "../runtime"
+    TestRe "file:../../../../.esy/install-cache/v1/runtime"
   peerDependencies:
     ocaml "~4.6.000"
 

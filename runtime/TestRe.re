@@ -97,16 +97,15 @@ let report = () => {
           } else {
             Failed(switch (test.diff) {
             | None => switch (test.print)  {
-              | None => "output did not equal expected"
+              | None => "(no printer provided. add one with @test.print)"
               | Some(printer) => {
-                Format.asprintf("output (%a) did not equal expected (%a)", printer, got, printer, expected)
+                Format.asprintf("\n - got     : %a\n - expected: %a", printer, got, printer, expected)
               }
               }
             | Some(diff) => Format.sprintf("output did not equal expected: %s", diff(got, expected))
             })
           }
         }), test.fixtures);
-
       Ran(t, items)
     }
   });
@@ -119,7 +118,7 @@ let report = () => {
       print_endline("Ran " ++ showTest(t));
       items |> List.iteri((i, (name, pos, result)) => switch result {
       | Passed => "passed " ++ (name |? string_of_int(i))
-      | Failed(message) => "failed " ++ (name |? string_of_int(i)) ++ ": " ++ message
+      | Failed(message) => "\nfailed " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n"
       | Errored(message, trace) => "{Error!} " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n" ++ trace
       } |> print_endline)
     }

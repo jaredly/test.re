@@ -10,7 +10,7 @@ type t = {
   todo: option(string),
   call: option(Parsetree.expression),
   diff: option(Parsetree.expression),
-  show: option(Parsetree.expression),
+  print: option(Parsetree.expression),
   compare: option(Parsetree.expression),
   customs: list((option(string), Parsetree.expression)),
   bools: list(Parsetree.expression),
@@ -24,7 +24,7 @@ let empty = {
   named_fixtures: [],
   call: None,
   diff: None,
-  show: None,
+  print: None,
   compare: None,
   customs: [],
   bools: [],
@@ -42,7 +42,7 @@ let validate = (test) =>
       fixtures: [],
       named_fixtures: [],
       diff: None,
-      show: None,
+      print: None,
       compare: None,
       customs: [],
       name: None,
@@ -50,11 +50,11 @@ let validate = (test) =>
     } =>
     None
   | {fixtures: [], named_fixtures: [], diff: Some(_)}
-  | {fixtures: [], named_fixtures: [], show: Some(_)}
+  | {fixtures: [], named_fixtures: [], print: Some(_)}
   | {fixtures: [], named_fixtures: [], call: Some(_)}
   | {fixtures: [], named_fixtures: [], compare: Some(_)} =>
     Utils.fail("Doesn't make sense to not have fixtures")
-  | {diff: Some(_), show: Some(_)} => Utils.fail("Diff and show together doesn't make sense")
+  | {diff: Some(_), print: Some(_)} => Utils.fail("Diff and print together doesn't make sense")
   | {fixtures: [], named_fixtures: [], customs: []} =>
     Utils.fail("Partial attributes.. doesn't make sense")
   | _ => Some(test)
