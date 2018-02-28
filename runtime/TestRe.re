@@ -111,17 +111,23 @@ let report = () => {
   });
 
   /* TODO have more output options */
-  results |> List.iter(result => {
+  let (total, failed) = results |> List.fold_left(((total, failed), result) => {
     switch result {
-    | Skipped(Test(t)) => print_endline("Skipped " ++ showTest(t))
+    | Skipped(Test(t)) => {print_endline("Skipped " ++ showTest(t)); (total, failed)}
     | Ran(Test(t), items) => {
       /* print_endline("Ran " ++ showTest(t)); */
       items |> List.iteri((i, (name, pos, result)) => switch result {
       | Passed => "."
       | Failed(message) => "\nfailed " ++ showTest(t) ++ " " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n"
       | Errored(message, trace) => "{Error!} " ++ showTest(t) ++ " " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n" ++ trace
-      } |> Printf.printf("%s"))
+      } |> Printf.printf("%s"));
+      (total + List.length(items), List.fold_left((x, (_, _, res)) => x + (res == Passed ? 0 : 1), 0, items))
     }
     }
-  })
+  }, (0, 0));
+  if (failed == 0) {
+    Printf.printf("\n\n✅ All clear! Ran %d tests\n", total);
+  } else {
+    Printf.printf("\n\n🛑 Ran %d tests, with %d failures\n", total, failed);
+  }
 };
