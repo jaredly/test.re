@@ -1,5 +1,5 @@
 {
-  "name": "testre",
+  "name": "@jaredly/testre",
   "version": "0.0.1",
   "description": "Easy inline tests",
   "author": "Jared Forsyth <jared@jaredforsyth.com>",
@@ -36,6 +36,5 @@
   },
   "resolutions": {
     "**/@opam/result": "1.2.0"
-  },
-  "private": true
+  }
 }

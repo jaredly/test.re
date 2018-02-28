@@ -21,7 +21,7 @@
   "dependencies": {
     "@opam/jbuilder": "^1.0.0-beta16",
     "@opam/reason": "3.0.4",
-    "TestRe": "link:../runtime",
+    "@jaredly/testre": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ppx_tools_versioned": "*",
     "@esy-ocaml/esy-installer": "^0.0.0",
@@ -39,6 +39,5 @@
   },
   "resolutions": {
     "**/@opam/result": "1.2.0"
-  },
-  "private": true
+  }
 }
