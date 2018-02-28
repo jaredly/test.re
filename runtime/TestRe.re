@@ -115,12 +115,12 @@ let report = () => {
     switch result {
     | Skipped(Test(t)) => print_endline("Skipped " ++ showTest(t))
     | Ran(Test(t), items) => {
-      print_endline("Ran " ++ showTest(t));
+      /* print_endline("Ran " ++ showTest(t)); */
       items |> List.iteri((i, (name, pos, result)) => switch result {
-      | Passed => "passed " ++ (name |? string_of_int(i))
-      | Failed(message) => "\nfailed " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n"
-      | Errored(message, trace) => "{Error!} " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n" ++ trace
-      } |> print_endline)
+      | Passed => "."
+      | Failed(message) => "\nfailed " ++ showTest(t) ++ " " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n"
+      | Errored(message, trace) => "{Error!} " ++ showTest(t) ++ " " ++ (name |? string_of_int(i)) ++ ": " ++ message ++ "\n" ++ trace
+      } |> Printf.printf("%s"))
     }
     }
   })
